@@ -26,9 +26,28 @@ const DEFAULTS = {
 };
 
 function stripJsoncComments(content: string): string {
-  return content
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .replace(/\/\/.*$/gm, "");
+  let result = "";
+  let inString = false;
+  let escape = false;
+
+  for (let i = 0; i < content.length; i++) {
+    const ch = content[i];
+    const next = content[i + 1];
+
+    if (escape) { result += ch; escape = false; continue; }
+    if (inString) {
+      if (ch === "\\") escape = true;
+      else if (ch === '"') inString = false;
+      result += ch;
+      continue;
+    }
+    if (ch === '"') { inString = true; result += ch; }
+    else if (ch === "/" && next === "/") { while (i < content.length && content[i] !== "\n") i++; i--; }
+    else if (ch === "/" && next === "*") { i += 2; while (i < content.length && !(content[i] === "*" && content[i + 1] === "/")) i++; i++; }
+    else { result += ch; }
+  }
+
+  return result.replace(/,\s*([\]}])/g, "$1");
 }
 
 function loadConfig(): SpritzConfig {

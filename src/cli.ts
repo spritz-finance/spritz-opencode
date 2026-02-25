@@ -98,10 +98,14 @@ async function install(): Promise<void> {
 
   if (configPath) {
     console.log(`  Found config at ${configPath}`);
-    addPluginToConfig(configPath);
-    addMcpServerToConfig(configPath, apiKey);
-    addInstructionsUrl(configPath);
-    console.log("  Updated OpenCode config");
+    const ok1 = addPluginToConfig(configPath);
+    const ok2 = addMcpServerToConfig(configPath, apiKey);
+    const ok3 = addInstructionsUrl(configPath);
+    if (ok1 && ok2 && ok3) {
+      console.log("  Updated OpenCode config");
+    } else {
+      console.error("  Warning: Could not parse config. You may need to add Spritz manually.");
+    }
   } else {
     console.log("  No OpenCode config found, creating one...");
     createNewConfig(apiKey);
