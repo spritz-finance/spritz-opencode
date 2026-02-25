@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "spritz-opencode": "./dist/cli.js"
+    "spritz-opencode": "dist/cli.js"
   },
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target node && bun build ./src/cli.ts --outfile ./dist/cli.js --target node && tsc --emitDeclarationOnly",
@@ -29,7 +29,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/spritz-finance/spritz-opencode"
+    "url": "git+https://github.com/spritz-finance/spritz-opencode.git"
   },
   "dependencies": {
     "@opencode-ai/plugin": "^1.0.162"
