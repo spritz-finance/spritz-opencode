@@ -20,12 +20,17 @@ import {
 const args = process.argv.slice(2);
 const command = args[0];
 
-if (command === "install") {
-  await install();
-} else if (command === "uninstall") {
-  await uninstall();
-} else {
+if (!command || command === "help" || command === "--help" || command === "-h") {
   printHelp();
+  process.exit(0);
+} else if (command === "install") {
+  install().then(() => process.exit(0));
+} else if (command === "uninstall") {
+  uninstall().then(() => process.exit(0));
+} else {
+  console.error(`Unknown command: ${command}`);
+  printHelp();
+  process.exit(1);
 }
 
 function printHelp(): void {
