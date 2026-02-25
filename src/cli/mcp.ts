@@ -12,11 +12,11 @@ export function addPluginToConfig(configPath: string): boolean {
   const config = readConfig(configPath);
   if (!config) return false;
 
-  const plugins = (config.plugins ?? []) as string[];
-  if (!plugins.includes(PLUGIN_NAME)) {
-    plugins.push(PLUGIN_NAME);
+  const plugin = (config.plugin ?? []) as string[];
+  if (!plugin.includes(PLUGIN_NAME)) {
+    plugin.push(PLUGIN_NAME);
   }
-  config.plugins = plugins;
+  config.plugin = plugin;
 
   return writeConfig(configPath, config);
 }
@@ -30,9 +30,9 @@ export function addMcpServerToConfig(
 
   const mcp = (config.mcp ?? {}) as Record<string, unknown>;
   mcp.spritz = {
-    command: "npx",
-    args: ["-y", MCP_PACKAGE],
-    env: {
+    type: "local",
+    command: ["npx", "-y", MCP_PACKAGE],
+    environment: {
       SPRITZ_API_KEY: apiKey,
     },
   };
@@ -59,12 +59,12 @@ export function createNewConfig(apiKey: string): boolean {
 
   const configPath = join(OPENCODE_CONFIG_DIR, "opencode.json");
   const config = {
-    plugins: [PLUGIN_NAME],
+    plugin: [PLUGIN_NAME],
     mcp: {
       spritz: {
-        command: "npx",
-        args: ["-y", MCP_PACKAGE],
-        env: {
+        type: "local",
+        command: ["npx", "-y", MCP_PACKAGE],
+        environment: {
           SPRITZ_API_KEY: apiKey,
         },
       },

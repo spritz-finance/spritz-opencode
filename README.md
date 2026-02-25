@@ -1,33 +1,38 @@
-# Spritz OpenCode Plugin
+# Spritz — OpenCode Plugin
 
 Off-ramp crypto to fiat bank accounts using Spritz Finance MCP tools in [OpenCode](https://opencode.ai).
 
-## Installation
+## Quick Start
+
+### 1. Get your API key
+
+Sign up at [app.spritz.finance/api-keys](https://app.spritz.finance/api-keys).
+
+### 2. Install
 
 ```bash
 bunx @spritz-finance/opencode install
 ```
 
-Or non-interactively:
+The installer will prompt for your API key, then configure everything automatically:
+- Stores your key at `~/.config/spritz/api_key`
+- Adds the Spritz MCP server to your OpenCode config
+- Registers the plugin for keyword detection
+- Adds agent instructions
+
+Non-interactive mode:
 
 ```bash
 bunx @spritz-finance/opencode install --api-key sk_live_... --no-tui
 ```
 
-### What it does
+### 3. Restart OpenCode
 
-1. Stores your API key at `~/.config/spritz/api_key`
-2. Adds the Spritz MCP server to OpenCode config (`npx @spritz-finance/mcp-server`)
-3. Registers the plugin for keyword detection
-4. Adds remote agent instructions
+The MCP server starts automatically. You're ready to go.
 
-## Uninstall
+## Usage
 
-```bash
-bunx @spritz-finance/opencode uninstall
-```
-
-## MCP Tools
+Ask your agent to manage bank accounts, create off-ramp quotes, or execute payments. The plugin provides 7 MCP tools:
 
 | Tool | Description |
 |------|-------------|
@@ -39,15 +44,19 @@ bunx @spritz-finance/opencode uninstall
 | `get_off_ramp_transaction` | Get on-chain transaction params |
 | `list_off_ramps` | List off-ramp transactions |
 
-## Keyword Detection
+### Keyword Detection
 
-The plugin hooks into `chat.message` and detects payment-related keywords:
+The plugin hooks into `chat.message` and detects payment-related keywords (off-ramp, bank transfer, routing number, IBAN, etc.). When detected, it injects the Spritz workflow and security rules into context so the agent knows how to use the tools correctly.
 
-- **Payment intent**: off-ramp, send money to bank, convert crypto to fiat, cash out, withdraw to bank
-- **Bank accounts**: add bank account, routing number, sort code, IBAN
-- **Spritz-specific**: spritz, fiat rails, off-ramp quote
+## Supported Networks
 
-When detected, a nudge is injected telling the agent to use Spritz MCP tools with the correct workflow and security rules.
+Ethereum, Polygon, Arbitrum, Base, Optimism, Avalanche, BSC, Solana, Bitcoin, and more.
+
+## Uninstall
+
+```bash
+bunx @spritz-finance/opencode uninstall
+```
 
 ## Configuration
 
@@ -62,6 +71,12 @@ Optional config at `~/.config/opencode/spritz.json`:
   }
 }
 ```
+
+## Prerequisites
+
+- **Spritz API key** — [app.spritz.finance/api-keys](https://app.spritz.finance/api-keys)
+- **Node.js >= 18** — for the MCP server
+- **OpenCode** — [opencode.ai](https://opencode.ai)
 
 ## License
 

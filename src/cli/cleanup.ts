@@ -32,9 +32,9 @@ export function removePluginFromConfig(): boolean {
   const config = readConfig(configPath);
   if (!config) return false;
 
-  const plugins = config.plugins as string[] | undefined;
-  if (plugins) {
-    config.plugins = plugins.filter((p) => p !== PLUGIN_NAME);
+  const plugin = config.plugin as string[] | undefined;
+  if (plugin) {
+    config.plugin = plugin.filter((p) => p !== PLUGIN_NAME);
     console.log("  Removed spritz plugin from config");
   }
 
