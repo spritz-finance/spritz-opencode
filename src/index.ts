@@ -1,23 +1,16 @@
 import type { Plugin, PluginInput } from "@opencode-ai/plugin";
 import type { Part } from "@opencode-ai/sdk";
 
-import { isConfigured } from "./config.js";
 import { detectKeyword, SPRITZ_NUDGE_MESSAGE } from "./keywords.js";
 import { log } from "./services/logger.js";
 
 export const SpritzPlugin: Plugin = async (ctx: PluginInput) => {
   const { directory } = ctx;
 
-  log("Plugin initialized", { directory, configured: isConfigured() });
-
-  if (!isConfigured()) {
-    log("Plugin disabled - SPRITZ_API_KEY not set");
-  }
+  log("Plugin initialized", { directory });
 
   return {
     "chat.message": async (input, output) => {
-      if (!isConfigured()) return;
-
       const start = Date.now();
 
       try {

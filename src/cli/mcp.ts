@@ -3,7 +3,6 @@ import { join } from "node:path";
 import {
   OPENCODE_CONFIG_DIR,
   PLUGIN_NAME,
-  MCP_PACKAGE,
   SPRITZ_INSTRUCTIONS_URL,
 } from "./constants.js";
 import { findOpencodeConfig, readConfig, writeConfig } from "./config.js";
@@ -23,22 +22,22 @@ export function addPluginToConfig(configPath: string): boolean {
 
 export function addMcpServerToConfig(
   configPath: string,
-  apiKey: string,
 ): boolean {
   const config = readConfig(configPath);
   if (!config) return false;
 
   const mcp = (config.mcp ?? {}) as Record<string, unknown>;
-  mcp.spritz = {
-    type: "local",
-    command: ["npx", "-y", MCP_PACKAGE],
-    environment: {
-      SPRITZ_API_KEY: apiKey,
-    },
-  };
+  mcp.spritz = createSpritzMcpEntry();
   config.mcp = mcp;
 
   return writeConfig(configPath, config);
+}
+
+export function createSpritzMcpEntry(): Record<string, unknown> {
+  return {
+    type: "local",
+    command: ["spritz", "auth", "mcp"],
+  };
 }
 
 export function addInstructionsUrl(configPath: string): boolean {
@@ -54,7 +53,7 @@ export function addInstructionsUrl(configPath: string): boolean {
   return writeConfig(configPath, config);
 }
 
-export function createNewConfig(apiKey: string): boolean {
+export function createNewConfig(): boolean {
   mkdirSync(OPENCODE_CONFIG_DIR, { recursive: true });
 
   const configPath = join(OPENCODE_CONFIG_DIR, "opencode.json");
@@ -62,11 +61,7 @@ export function createNewConfig(apiKey: string): boolean {
     plugin: [PLUGIN_NAME],
     mcp: {
       spritz: {
-        type: "local",
-        command: ["npx", "-y", MCP_PACKAGE],
-        environment: {
-          SPRITZ_API_KEY: apiKey,
-        },
+        ...createSpritzMcpEntry(),
       },
     },
     instructions: [SPRITZ_INSTRUCTIONS_URL],

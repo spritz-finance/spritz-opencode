@@ -1,8 +1,6 @@
-import { existsSync, unlinkSync, rmSync } from "node:fs";
+import { existsSync, unlinkSync } from "node:fs";
 import {
   SPRITZ_CONFIG_PATH,
-  SPRITZ_API_KEY_PATH,
-  SPRITZ_API_KEY_DIR,
   PLUGIN_NAME,
   SPRITZ_INSTRUCTIONS_URL,
 } from "./constants.js";
@@ -63,18 +61,5 @@ export function removeSpritzConfig(): void {
   if (existsSync(SPRITZ_CONFIG_PATH)) {
     unlinkSync(SPRITZ_CONFIG_PATH);
     console.log(`  Removed ${SPRITZ_CONFIG_PATH}`);
-  }
-
-  if (existsSync(SPRITZ_API_KEY_PATH)) {
-    unlinkSync(SPRITZ_API_KEY_PATH);
-    console.log(`  Removed ${SPRITZ_API_KEY_PATH}`);
-  }
-
-  if (existsSync(SPRITZ_API_KEY_DIR)) {
-    try {
-      rmSync(SPRITZ_API_KEY_DIR, { recursive: true });
-    } catch {
-      // Directory may not be empty if user has other files
-    }
   }
 }

@@ -1,70 +1,71 @@
 # Spritz — OpenCode Plugin
 
-Off-ramp crypto to fiat bank accounts using Spritz Finance MCP tools in [OpenCode](https://opencode.ai).
+Spritz fiat-rail tools for OpenCode, backed by the Spritz MCP server.
 
-## Quick Start
+## Install
 
-### 1. Get your API key
-
-Sign up at [app.spritz.finance/api-keys](https://app.spritz.finance/api-keys).
-
-### 2. Install
+Install the [`spritz` CLI](https://spritz.finance/install), then configure
+OpenCode:
 
 ```bash
 bunx @spritz-finance/opencode install
 ```
 
-The installer will prompt for your API key, then configure everything automatically:
-- Stores your key at `~/.config/spritz/api_key`
-- Adds the Spritz MCP server to your OpenCode config
-- Registers the plugin for keyword detection
-- Adds agent instructions
+The installer:
 
-Non-interactive mode:
+- adds the plugin and Spritz MCP server to OpenCode;
+- launches the MCP server through `spritz auth mcp`;
+- adds the reviewed Spritz agent instructions; and
+- writes only non-secret keyword settings.
+
+It never asks for a key, puts a key on argv, or writes a key to OpenCode JSON or
+a plaintext file.
+
+## Human-approved access
+
+An AI agent must not accept Developer Terms, complete business verification, or
+own a Production credential. A human administrator enrolls the legal entity in
+[Developer Access](https://console.spritz.finance) for **Sandbox** or requests
+**Live Test**, then approves a scoped device grant. **Production** is a separate
+commercial service with its own verification, agreements, and credentials:
 
 ```bash
-bunx @spritz-finance/opencode install --api-key sk_live_... --no-tui
+spritz auth device start --access developer
+# Human opens the returned URL and approves the requested scopes.
+spritz auth device complete
+spritz auth mcp
 ```
 
-### 3. Restart OpenCode
+The currently deployed device endpoint authorizes a Spritz **user account**. It
+is not yet a Developer Access workspace grant. Developer mode therefore fails
+closed until platform support exists, and OpenCode's local MCP process cannot
+start. Never bypass that result by giving OpenCode a raw user or Production key.
 
-The MCP server starts automatically. You're ready to go.
+After human approval, restart OpenCode. Its MCP entry runs:
+
+```bash
+spritz auth mcp
+```
+
+The credential stays in the system keychain and is injected only into the fixed
+MCP child process. The broker cannot run an arbitrary command that prints it.
 
 ## Usage
 
-Ask your agent to manage bank accounts, create off-ramp quotes, or execute payments. The plugin provides 7 MCP tools:
+Ask the agent to list approved destinations, create a quote, or inspect an
+off-ramp. The plugin detects relevant requests and injects the workflow and
+safety gates.
 
-| Tool | Description |
-|------|-------------|
-| `list_bank_accounts` | List saved bank account destinations |
-| `create_bank_account` | Add a new bank account (US, CA, UK, IBAN) |
-| `delete_bank_account` | Delete a bank account by ID |
-| `create_off_ramp_quote` | Create a crypto-to-fiat quote |
-| `get_off_ramp_quote` | Check quote status |
-| `get_off_ramp_transaction` | Get on-chain transaction params |
-| `list_off_ramps` | List off-ramp transactions |
-
-### Keyword Detection
-
-The plugin hooks into `chat.message` and detects payment-related keywords (off-ramp, bank transfer, routing number, IBAN, etc.). When detected, it injects the Spritz workflow and security rules into context so the agent knows how to use the tools correctly.
-
-## Supported Networks
-
-Ethereum, Polygon, Arbitrum, Base, Optimism, Avalanche, BSC, Solana, Bitcoin, and more.
-
-## Uninstall
-
-```bash
-bunx @spritz-finance/opencode uninstall
-```
+Creating or deleting a destination, creating a fundable quote, and signing or
+submitting a transaction each require fresh human confirmation. Sandbox uses
+simulated funds; Live Test and Production carry real-money risk.
 
 ## Configuration
 
-Optional config at `~/.config/opencode/spritz.json`:
+Optional non-secret settings live at `~/.config/opencode/spritz.json`:
 
 ```json
 {
-  "apiKey": "sk_live_...",
   "keywords": {
     "enabled": true,
     "patterns": ["custom regex pattern"]
@@ -72,11 +73,25 @@ Optional config at `~/.config/opencode/spritz.json`:
 }
 ```
 
-## Prerequisites
+Do not add `apiKey` to this file. Secret-managed CI may explicitly inject
+`SPRITZ_API_KEY` into the MCP process, but local usage should use the CLI broker.
 
-- **Spritz API key** — [app.spritz.finance/api-keys](https://app.spritz.finance/api-keys)
-- **Node.js >= 18** — for the MCP server
-- **OpenCode** — [opencode.ai](https://opencode.ai)
+## Uninstall
+
+```bash
+bunx @spritz-finance/opencode uninstall
+```
+
+Uninstall removes only OpenCode's Spritz plugin, MCP, instruction, and non-secret
+settings entries. It does not delete credentials managed by the Spritz CLI.
+
+## Development
+
+```bash
+bun test
+bun run typecheck
+bun run build
+```
 
 ## License
 

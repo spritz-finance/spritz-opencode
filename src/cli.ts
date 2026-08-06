@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-import { createReadline, confirm, prompt } from "./cli/prompt.js";
+import { createReadline, confirm } from "./cli/prompt.js";
 import { getOpencodeVersion } from "./cli/version.js";
 import { findOpencodeConfig } from "./cli/config.js";
-import { storeApiKey, createSpritzConfig } from "./cli/api-key.js";
+import { createSpritzConfig } from "./cli/settings.js";
 import {
   addPluginToConfig,
   addMcpServerToConfig,
@@ -41,22 +41,14 @@ Commands:
   install     Configure Spritz MCP server and plugin
   uninstall   Remove Spritz configuration
 
-Options:
-  --api-key <key>   Provide API key non-interactively
-  --no-tui          Non-interactive mode (requires --api-key)
-
 Examples:
   bunx @spritz-finance/opencode install
-  bunx @spritz-finance/opencode install --api-key sk_live_...
   bunx @spritz-finance/opencode uninstall
 `);
 }
 
 async function install(): Promise<void> {
   console.log("\n  Spritz Finance — OpenCode Setup\n");
-
-  const noTui = args.includes("--no-tui");
-  const apiKeyIdx = args.indexOf("--api-key");
 
   // --- Detect OpenCode ---
   const version = getOpencodeVersion();
@@ -66,30 +58,9 @@ async function install(): Promise<void> {
     console.log("  OpenCode not detected (will configure anyway)");
   }
 
-  // --- Get API key ---
-  let apiKey = apiKeyIdx !== -1 ? args[apiKeyIdx + 1] : undefined;
-
-  if (!apiKey) {
-    if (noTui) {
-      console.error("  Error: --no-tui requires --api-key");
-      process.exit(1);
-    }
-
-    const rl = createReadline();
-    console.log("  Get your API key from https://app.spritz.finance\n");
-    apiKey = await prompt(rl, "  Spritz API key");
-    rl.close();
-
-    if (!apiKey) {
-      console.error("  Error: API key is required");
-      process.exit(1);
-    }
-  }
-
-  // --- Store API key ---
-  console.log("\n  Storing API key...");
-  storeApiKey(apiKey);
-  createSpritzConfig(apiKey);
+  // Store only non-secret plugin settings. Credentials remain in the Spritz
+  // CLI keychain and are injected into the fixed MCP child by `spritz auth mcp`.
+  createSpritzConfig();
 
   // --- Configure OpenCode ---
   console.log("\n  Configuring OpenCode...");
@@ -99,7 +70,7 @@ async function install(): Promise<void> {
   if (configPath) {
     console.log(`  Found config at ${configPath}`);
     const ok1 = addPluginToConfig(configPath);
-    const ok2 = addMcpServerToConfig(configPath, apiKey);
+    const ok2 = addMcpServerToConfig(configPath);
     const ok3 = addInstructionsUrl(configPath);
     if (ok1 && ok2 && ok3) {
       console.log("  Updated OpenCode config");
@@ -108,10 +79,26 @@ async function install(): Promise<void> {
     }
   } else {
     console.log("  No OpenCode config found, creating one...");
-    createNewConfig(apiKey);
+    createNewConfig();
   }
 
-  console.log("\n  Setup complete! Restart OpenCode to activate Spritz.\n");
+  console.log(`
+  OpenCode configuration installed.
+
+  A human workspace administrator must now:
+    1. Enroll the legal entity at https://console.spritz.finance
+    2. Accept the Developer Terms and choose Sandbox, Live Test, or Production
+    3. Run: spritz auth device start --access developer
+    4. Approve the requested scopes in the browser
+    5. Run: spritz auth device complete
+
+  The current device flow is a user-account flow, not a Developer Access
+  workspace grant, so Developer Access and the local MCP server remain
+  fail-closed until the platform endpoints are deployed. Do not give an AI
+  agent a raw user or Production key to bypass this boundary.
+
+  Restart OpenCode after the human completes approval.
+`);
 }
 
 async function uninstall(): Promise<void> {
