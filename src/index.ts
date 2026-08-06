@@ -1,23 +1,16 @@
 import type { Plugin, PluginInput } from "@opencode-ai/plugin";
 import type { Part } from "@opencode-ai/sdk";
 
-import { isConfigured } from "./config.js";
 import { detectKeyword, SPRITZ_NUDGE_MESSAGE } from "./keywords.js";
 import { log } from "./services/logger.js";
 
 export const SpritzPlugin: Plugin = async (ctx: PluginInput) => {
   const { directory } = ctx;
 
-  log("Plugin initialized", { directory, configured: isConfigured() });
-
-  if (!isConfigured()) {
-    log("Plugin disabled - SPRITZ_API_KEY not set");
-  }
+  log("Plugin initialized", { directory });
 
   return {
     "chat.message": async (input, output) => {
-      if (!isConfigured()) return;
-
       const start = Date.now();
 
       try {
@@ -37,15 +30,14 @@ export const SpritzPlugin: Plugin = async (ctx: PluginInput) => {
           return;
         }
 
-        log("chat.message: processing", {
-          messagePreview: userMessage.slice(0, 100),
-          partsCount: output.parts.length,
-        });
+        // Never log user text or matched substrings: payment requests can contain
+        // amounts, bank details, or other sensitive financial information.
+        log("chat.message: processing", { partsCount: output.parts.length });
 
-        const { type, match } = detectKeyword(userMessage);
+        const { type } = detectKeyword(userMessage);
 
         if (type) {
-          log(`chat.message: ${type} keyword detected`, { match });
+          log(`chat.message: ${type} keyword detected`);
 
           const nudgePart: Part = {
             id: `spritz-${type}-nudge-${Date.now()}`,
@@ -59,7 +51,7 @@ export const SpritzPlugin: Plugin = async (ctx: PluginInput) => {
           output.parts.push(nudgePart);
 
           const duration = Date.now() - start;
-          log(`chat.message: ${type} nudge injected`, { duration, match });
+          log(`chat.message: ${type} nudge injected`, { duration });
         }
       } catch (error) {
         log("chat.message: ERROR", { error: String(error) });

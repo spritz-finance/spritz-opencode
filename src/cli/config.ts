@@ -1,49 +1,19 @@
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import {
+  applyEdits,
+  modify,
+  parse,
+  type FormattingOptions,
+  type ParseError,
+} from "jsonc-parser";
 import { OPENCODE_CONFIG_DIR } from "./constants.js";
 
-export function stripJsoncComments(content: string): string {
-  // Remove block comments, line comments (but not inside strings), and trailing commas
-  let result = "";
-  let inString = false;
-  let escape = false;
-
-  for (let i = 0; i < content.length; i++) {
-    const ch = content[i];
-    const next = content[i + 1];
-
-    if (escape) {
-      result += ch;
-      escape = false;
-      continue;
-    }
-
-    if (inString) {
-      if (ch === "\\") escape = true;
-      else if (ch === '"') inString = false;
-      result += ch;
-      continue;
-    }
-
-    if (ch === '"') {
-      inString = true;
-      result += ch;
-    } else if (ch === "/" && next === "/") {
-      // Skip to end of line
-      while (i < content.length && content[i] !== "\n") i++;
-      i--; // loop increment will advance
-    } else if (ch === "/" && next === "*") {
-      i += 2;
-      while (i < content.length && !(content[i] === "*" && content[i + 1] === "/")) i++;
-      i++; // skip closing /
-    } else {
-      result += ch;
-    }
-  }
-
-  // Remove trailing commas before ] or }
-  return result.replace(/,\s*([\]}])/g, "$1");
-}
+const formattingOptions: FormattingOptions = {
+  insertSpaces: true,
+  tabSize: 2,
+  eol: "\n",
+};
 
 export function findOpencodeConfig(): string | null {
   const jsonc = join(OPENCODE_CONFIG_DIR, "opencode.jsonc");
@@ -59,8 +29,12 @@ export function readConfig(
 ): Record<string, unknown> | null {
   try {
     const content = readFileSync(configPath, "utf-8");
-    const json = stripJsoncComments(content);
-    return JSON.parse(json) as Record<string, unknown>;
+    const errors: ParseError[] = [];
+    const value = parse(content, errors, {
+      allowTrailingComma: true,
+      disallowComments: false,
+    });
+    return errors.length === 0 && isRecord(value) ? value : null;
   } catch {
     return null;
   }
@@ -71,9 +45,58 @@ export function writeConfig(
   config: Record<string, unknown>,
 ): boolean {
   try {
-    writeFileSync(configPath, JSON.stringify(config, null, 2));
+    if (!existsSync(configPath)) {
+      writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
+      return true;
+    }
+
+    const originalText = readFileSync(configPath, "utf-8");
+    const original = readConfig(configPath);
+    if (!original) return false;
+
+    let updatedText = originalText;
+    for (const change of diffValues(original, config)) {
+      updatedText = applyEdits(
+        updatedText,
+        modify(updatedText, change.path, change.value, { formattingOptions }),
+      );
+    }
+    writeFileSync(configPath, updatedText.endsWith("\n") ? updatedText : `${updatedText}\n`);
     return true;
   } catch {
     return false;
   }
+}
+
+interface ConfigChange {
+  path: (string | number)[];
+  value: unknown;
+}
+
+function diffValues(
+  before: unknown,
+  after: unknown,
+  path: (string | number)[] = [],
+): ConfigChange[] {
+  if (isRecord(before) && isRecord(after)) {
+    const changes: ConfigChange[] = [];
+    for (const key of new Set([...Object.keys(before), ...Object.keys(after)])) {
+      if (!(key in after)) {
+        changes.push({ path: [...path, key], value: undefined });
+      } else if (!(key in before)) {
+        changes.push({ path: [...path, key], value: after[key] });
+      } else {
+        changes.push(...diffValues(before[key], after[key], [...path, key]));
+      }
+    }
+    return changes;
+  }
+
+  return JSON.stringify(before) === JSON.stringify(after)
+    ? []
+    : [{ path, value: after }];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

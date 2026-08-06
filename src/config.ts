@@ -8,10 +8,7 @@ const CONFIG_FILES = [
   join(CONFIG_DIR, "spritz.json"),
 ];
 
-const API_KEY_PATH = join(homedir(), ".config", "spritz", "api_key");
-
 interface SpritzConfig {
-  apiKey?: string;
   keywords?: {
     enabled?: boolean;
     patterns?: string[];
@@ -65,21 +62,7 @@ function loadConfig(): SpritzConfig {
   return {};
 }
 
-function loadApiKey(): string | undefined {
-  if (existsSync(API_KEY_PATH)) {
-    try {
-      return readFileSync(API_KEY_PATH, "utf-8").trim();
-    } catch {
-      // Can't read key file
-    }
-  }
-  return undefined;
-}
-
 const fileConfig = loadConfig();
-
-export const SPRITZ_API_KEY =
-  fileConfig.apiKey ?? process.env.SPRITZ_API_KEY ?? loadApiKey();
 
 export const CONFIG = {
   keywords: {
@@ -87,10 +70,6 @@ export const CONFIG = {
     customPatterns: fileConfig.keywords?.patterns ?? [],
   },
 };
-
-export function isConfigured(): boolean {
-  return !!SPRITZ_API_KEY;
-}
 
 export function getConfigDir(): string {
   return CONFIG_DIR;
