@@ -1,28 +1,26 @@
 # How to use Spritz
 
-Spritz provides MCP tools for off-ramping crypto to fiat bank accounts. Use these tools when the user wants to send money to a bank account, convert crypto to fiat, or manage payment destinations.
+Spritz provides MCP tools for off-ramping crypto to fiat bank accounts. Use
+these tools when the user wants to send money to a bank account, convert crypto
+to fiat, or manage payment destinations.
 
 ## Access boundary
 
-- Treat **Developer Access** as the umbrella program.
-- **Sandbox** is simulated and begins only after a human accepts the Developer
-  Terms for the legal entity.
-- **Live Test** uses real money within approved limits after preliminary
-  business verification and compliance approval.
-- **Production** requires full business verification and executed commercial
-  agreements.
-- Never accept terms, complete verification, request a raw key, or create/own a
-  Production credential on the user's behalf.
-- A human administrator must approve a scoped device grant at
-  `https://console.spritz.finance`. The current CLI device flow is a Spritz
-  user-account flow, not yet a Developer Access workspace grant; never bypass
-  its fail-closed `--access developer` result.
+- These tools act on an individual Spritz **End User account**.
+- The owner of the affected account must approve the device grant.
+- Never create the account, perform identity verification, approve a grant,
+  request a raw key, or obtain a credential on the user's behalf.
+- Local MCP clients must launch `spritz auth mcp --access user`.
+- Developer workspace access is a separate principal and credential model. It
+  uses organization-level HMAC/scoped authorization and is not supported by
+  this End User tool surface. Never substitute one credential type for the
+  other.
 
 ## MCP availability
 
 Use the following tools only when the Spritz MCP connection is active. If they
-are absent, stop and ask a human workspace administrator to complete Developer
-Access; never request a raw key or substitute a user-account credential.
+are absent, stop and ask the End User account owner to complete or approve the
+device flow; never request a raw key or use a Developer workspace credential.
 
 ## Available MCP Tools
 
@@ -56,7 +54,8 @@ Access; never request a raw key or substitute a user-account credential.
 
 ## Supported Networks
 
-Use USDC on Base for lowest fees. Also supported: ethereum, polygon, arbitrum, optimism, avalanche, bsc.
+Use USDC on Base for lowest fees. Also supported: ethereum, polygon, arbitrum,
+optimism, avalanche, bsc.
 
 ## Security — MANDATORY
 

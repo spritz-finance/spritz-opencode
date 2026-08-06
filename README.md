@@ -1,6 +1,7 @@
 # Spritz — OpenCode Plugin
 
-Spritz fiat-rail tools for OpenCode, backed by the Spritz MCP server.
+Spritz fiat-rail tools for OpenCode, backed by the Spritz MCP server and an
+individual Spritz **End User account**.
 
 ## Install
 
@@ -14,41 +15,35 @@ bunx @spritz-finance/opencode install
 The installer:
 
 - adds the plugin and Spritz MCP server to OpenCode;
-- launches the MCP server through `spritz auth mcp`;
+- launches the MCP server through `spritz auth mcp --access user`;
 - adds the reviewed Spritz agent instructions; and
 - writes only non-secret keyword settings.
 
 It never asks for a key, puts a key on argv, or writes a key to OpenCode JSON or
 a plaintext file.
 
-## Human-approved access
+## Human-approved End User access
 
-An AI agent must not accept Developer Terms, complete business verification, or
-own a Production credential. A human administrator enrolls the legal entity in
-[Developer Access](https://console.spritz.finance) for **Sandbox** or requests
-**Live Test**, then approves a scoped device grant. **Production** is a separate
-commercial service with its own verification, agreements, and credentials:
+The owner of the affected Spritz account must approve access. An AI agent must
+not create the account, perform identity verification, approve its own device
+grant, or obtain a credential outside this flow.
 
 ```bash
-spritz auth device start --access developer
-# Human opens the returned URL and approves the requested scopes.
+spritz auth device start --access user
+# The account owner opens the returned URL and approves the requested scopes.
 spritz auth device complete
-spritz auth mcp
+spritz auth mcp --access user
 ```
 
-The currently deployed device endpoint authorizes a Spritz **user account**. It
-is not yet a Developer Access workspace grant. Developer mode therefore fails
-closed until platform support exists, and OpenCode's local MCP process cannot
-start. Never bypass that result by giving OpenCode a raw user or Production key.
+After approval, restart OpenCode. Its MCP entry runs
+`spritz auth mcp --access user`. The End User Bearer credential stays in the
+system keychain and is injected only into the fixed MCP child process.
 
-After human approval, restart OpenCode. Its MCP entry runs:
-
-```bash
-spritz auth mcp
-```
-
-The credential stays in the system keychain and is injected only into the fixed
-MCP child process. The broker cannot run an arbitrary command that prints it.
+Developer workspace access is a different principal and credential model. It
+uses organization-level HMAC/scoped credentials, not this End User Bearer
+credential. `spritz auth mcp --access developer` fails closed until a separate
+workspace-agent surface is implemented. Do not substitute one credential type
+for the other.
 
 ## Usage
 
@@ -56,9 +51,10 @@ Ask the agent to list approved destinations, create a quote, or inspect an
 off-ramp. The plugin detects relevant requests and injects the workflow and
 safety gates.
 
-Creating or deleting a destination, creating a fundable quote, and signing or
-submitting a transaction each require fresh human confirmation. Sandbox uses
-simulated funds; Live Test and Production carry real-money risk.
+These tools act on the approving human's End User account. Creating or deleting
+a destination, creating a fundable quote, and signing or submitting a
+transaction each require fresh human confirmation. A live account carries
+real-money risk.
 
 ## Configuration
 
@@ -73,8 +69,9 @@ Optional non-secret settings live at `~/.config/opencode/spritz.json`:
 }
 ```
 
-Do not add `apiKey` to this file. Secret-managed CI may explicitly inject
-`SPRITZ_API_KEY` into the MCP process, but local usage should use the CLI broker.
+Do not add `apiKey` to this file. Secret-managed CI may explicitly inject an
+End User `SPRITZ_API_KEY` into the MCP process, but local usage should use the
+CLI broker.
 
 ## Uninstall
 
@@ -82,8 +79,9 @@ Do not add `apiKey` to this file. Secret-managed CI may explicitly inject
 bunx @spritz-finance/opencode uninstall
 ```
 
-Uninstall removes only OpenCode's Spritz plugin, MCP, instruction, and non-secret
-settings entries. It does not delete credentials managed by the Spritz CLI.
+Uninstall removes only OpenCode's Spritz plugin, MCP, instruction, and
+non-secret settings entries. It does not delete credentials managed by the
+Spritz CLI.
 
 ## Development
 

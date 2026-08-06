@@ -7,7 +7,7 @@ describe("Spritz MCP configuration", () => {
 
     expect(entry).toEqual({
       type: "local",
-      command: ["spritz", "auth", "mcp"],
+      command: ["spritz", "auth", "mcp", "--access", "user"],
     });
     expect(JSON.stringify(entry)).not.toContain("SPRITZ_API_KEY");
   });

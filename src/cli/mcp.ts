@@ -36,7 +36,7 @@ export function addMcpServerToConfig(
 export function createSpritzMcpEntry(): Record<string, unknown> {
   return {
     type: "local",
-    command: ["spritz", "auth", "mcp"],
+    command: ["spritz", "auth", "mcp", "--access", "user"],
   };
 }
 

@@ -59,7 +59,8 @@ async function install(): Promise<void> {
   }
 
   // Store only non-secret plugin settings. Credentials remain in the Spritz
-  // CLI keychain and are injected into the fixed MCP child by `spritz auth mcp`.
+  // CLI keychain and are injected into the fixed MCP child by
+  // `spritz auth mcp --access user`.
   createSpritzConfig();
 
   // --- Configure OpenCode ---
@@ -85,17 +86,16 @@ async function install(): Promise<void> {
   console.log(`
   OpenCode configuration installed.
 
-  A human workspace administrator must now:
-    1. Enroll the legal entity at https://console.spritz.finance
-    2. Accept the Developer Terms and choose Sandbox, Live Test, or Production
-    3. Run: spritz auth device start --access developer
-    4. Approve the requested scopes in the browser
-    5. Run: spritz auth device complete
+  The owner of the affected Spritz End User account must now:
+    1. Run: spritz auth device start --access user
+    2. Open the returned URL and approve the requested scopes
+    3. Run: spritz auth device complete
 
-  The current device flow is a user-account flow, not a Developer Access
-  workspace grant, so Developer Access and the local MCP server remain
-  fail-closed until the platform endpoints are deployed. Do not give an AI
-  agent a raw user or Production key to bypass this boundary.
+  OpenCode will launch: spritz auth mcp --access user
+
+  Developer workspace-agent access is a separate HMAC/scoped credential model
+  and remains fail-closed. Do not substitute a Developer credential or raw key
+  for the End User account grant.
 
   Restart OpenCode after the human completes approval.
 `);
