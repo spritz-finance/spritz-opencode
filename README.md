@@ -41,8 +41,9 @@ messages. The End User Bearer credential stays in the system keychain and is
 injected only into the fixed MCP child process.
 
 Developer workspace access is a different principal and credential model. A
-person acting for the responsible business creates one workspace and obtains
-organization-level HMAC credentials through the
+Developer may be an individual or organization. The individual, or a person
+authorized for the organization, creates one workspace and obtains Developer
+HMAC credentials through the
 [Developer Access flow](https://docs.spritz.finance/guides/developer-access).
 Do not substitute one credential type for the other.
 

@@ -92,9 +92,9 @@ async function install(): Promise<void> {
 
   OpenCode will launch: spritz auth mcp --access user
 
-  Developer workspace access uses a separate, human-owned organization and HMAC
-  credential flow. Do not substitute a Developer credential or raw key for the
-  End User account grant.
+  Developer workspace access uses a separate HMAC credential flow for an individual or
+  organization. Do not substitute a Developer credential or raw key for the End User
+  account grant.
 
   Restart OpenCode after the human completes approval.
 `);

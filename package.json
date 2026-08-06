@@ -1,7 +1,7 @@
 {
   "name": "@spritz-finance/opencode",
   "version": "0.1.4",
-  "description": "OpenCode plugin for Spritz Finance — off-ramp crypto to bank accounts with AI agents",
+  "description": "Human-approved Spritz End User account tools for OpenCode off-ramp and fiat-rail workflows",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

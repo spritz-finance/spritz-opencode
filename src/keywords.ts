@@ -103,5 +103,5 @@ These tools act on an individual Spritz End User account. If they are unavailabl
 - ALWAYS confirm bank account details with the user before saving
 - ALWAYS require fresh human confirmation before creating/deleting a destination, creating a fundable quote, or signing/submitting a transaction
 - NEVER ask for or persist a raw Spritz credential; the account owner approves scoped device access
-- NEVER use an organization-level Developer HMAC credential with this End User tool surface
+- NEVER use a Developer HMAC credential with this End User tool surface
 - When in doubt: ASK THE USER`;
