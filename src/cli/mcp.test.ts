@@ -18,7 +18,7 @@ afterEach(() => {
 });
 
 describe("Spritz MCP configuration", () => {
-  test("uses the CLI credential broker without embedding a key", () => {
+  test("registers the fail-closed CLI broker boundary without embedding a key", () => {
     const entry = createSpritzMcpEntry();
 
     expect(entry).toEqual({

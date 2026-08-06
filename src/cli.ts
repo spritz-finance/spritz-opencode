@@ -57,9 +57,8 @@ async function install(): Promise<void> {
     console.log("  OpenCode not detected (will configure anyway)");
   }
 
-  // Store only non-secret plugin settings. Credentials remain in the Spritz
-  // CLI keychain and are injected into the fixed MCP child by
-  // `spritz auth mcp --access user`.
+  // Store only non-secret plugin settings. The configured MCP command remains
+  // fail-closed until the CLI ships an integrity-verifiable packaged child.
   createSpritzConfig();
 
   // --- Configure OpenCode ---
@@ -90,7 +89,10 @@ async function install(): Promise<void> {
     2. Open the returned URL and approve the requested scopes
     3. Run: spritz auth device complete
 
-  OpenCode will launch: spritz auth mcp --access user
+  OpenCode will invoke: spritz auth mcp --access user
+  That boundary is intentionally fail-closed in the current release. Device
+  approval or restarting OpenCode does not enable MCP tools. Do not add a raw
+  key to OpenCode configuration; wait for the packaged broker release.
 
   Developer workspace access uses a separate HMAC credential flow for an individual or
   organization. Do not substitute a Developer credential or raw key for the End User
