@@ -3,7 +3,7 @@ import { join } from "node:path";
 import {
   OPENCODE_CONFIG_DIR,
   PLUGIN_NAME,
-  SPRITZ_INSTRUCTIONS_URL,
+  PLUGIN_PACKAGE,
 } from "./constants.js";
 import { findOpencodeConfig, readConfig, writeConfig } from "./config.js";
 
@@ -11,10 +11,10 @@ export function addPluginToConfig(configPath: string): boolean {
   const config = readConfig(configPath);
   if (!config) return false;
 
-  const plugin = (config.plugin ?? []) as string[];
-  if (!plugin.includes(PLUGIN_NAME)) {
-    plugin.push(PLUGIN_NAME);
-  }
+  const plugin = ((config.plugin ?? []) as string[]).filter(
+    (entry) => entry !== PLUGIN_PACKAGE && !entry.startsWith(`${PLUGIN_PACKAGE}@`),
+  );
+  plugin.push(PLUGIN_NAME);
   config.plugin = plugin;
 
   return writeConfig(configPath, config);
@@ -40,19 +40,6 @@ export function createSpritzMcpEntry(): Record<string, unknown> {
   };
 }
 
-export function addInstructionsUrl(configPath: string): boolean {
-  const config = readConfig(configPath);
-  if (!config) return false;
-
-  const instructions = (config.instructions ?? []) as string[];
-  if (!instructions.includes(SPRITZ_INSTRUCTIONS_URL)) {
-    instructions.push(SPRITZ_INSTRUCTIONS_URL);
-  }
-  config.instructions = instructions;
-
-  return writeConfig(configPath, config);
-}
-
 export function createNewConfig(): boolean {
   mkdirSync(OPENCODE_CONFIG_DIR, { recursive: true });
 
@@ -64,7 +51,6 @@ export function createNewConfig(): boolean {
         ...createSpritzMcpEntry(),
       },
     },
-    instructions: [SPRITZ_INSTRUCTIONS_URL],
   };
 
   const ok = writeConfig(configPath, config);

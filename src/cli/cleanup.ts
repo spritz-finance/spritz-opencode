@@ -1,8 +1,8 @@
 import { existsSync, unlinkSync } from "node:fs";
 import {
   SPRITZ_CONFIG_PATH,
-  PLUGIN_NAME,
-  SPRITZ_INSTRUCTIONS_URL,
+  PLUGIN_PACKAGE,
+  LEGACY_SPRITZ_INSTRUCTIONS_URL,
 } from "./constants.js";
 import { findOpencodeConfig, readConfig, writeConfig } from "./config.js";
 
@@ -32,7 +32,9 @@ export function removePluginFromConfig(): boolean {
 
   const plugin = config.plugin as string[] | undefined;
   if (plugin) {
-    config.plugin = plugin.filter((p) => p !== PLUGIN_NAME);
+    config.plugin = plugin.filter(
+      (entry) => entry !== PLUGIN_PACKAGE && !entry.startsWith(`${PLUGIN_PACKAGE}@`),
+    );
     console.log("  Removed spritz plugin from config");
   }
 
@@ -48,10 +50,13 @@ export function removeInstructionsFromConfig(): boolean {
 
   const instructions = config.instructions as string[] | undefined;
   if (instructions) {
-    config.instructions = instructions.filter(
-      (url) => url !== SPRITZ_INSTRUCTIONS_URL,
+    const nextInstructions = instructions.filter(
+      (url) => url !== LEGACY_SPRITZ_INSTRUCTIONS_URL,
     );
-    console.log("  Removed spritz instructions URL from config");
+    config.instructions = nextInstructions;
+    if (nextInstructions.length !== instructions.length) {
+      console.log("  Removed legacy Spritz instructions URL from config");
+    }
   }
 
   return writeConfig(configPath, config);

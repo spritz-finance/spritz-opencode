@@ -16,7 +16,7 @@ The installer:
 
 - adds the plugin and Spritz MCP server to OpenCode;
 - launches the MCP server through `spritz auth mcp --access user`;
-- adds the reviewed Spritz agent instructions; and
+- injects the reviewed Spritz safety workflow when a relevant request is detected; and
 - writes only non-secret keyword settings.
 
 It never asks for a key, puts a key on argv, or writes a key to OpenCode JSON or
@@ -32,18 +32,19 @@ grant, or obtain a credential outside this flow.
 spritz auth device start --access user
 # The account owner opens the returned URL and approves the requested scopes.
 spritz auth device complete
-spritz auth mcp --access user
 ```
 
-After approval, restart OpenCode. Its MCP entry runs
-`spritz auth mcp --access user`. The End User Bearer credential stays in the
-system keychain and is injected only into the fixed MCP child process.
+After approval, restart OpenCode. Its MCP entry launches `spritz auth mcp
+--access user` as a long-lived stdio server. Do not run that broker as a
+one-time setup command; without an MCP client attached it waits for protocol
+messages. The End User Bearer credential stays in the system keychain and is
+injected only into the fixed MCP child process.
 
-Developer workspace access is a different principal and credential model. It
-uses organization-level HMAC/scoped credentials, not this End User Bearer
-credential. `spritz auth mcp --access developer` fails closed until a separate
-workspace-agent surface is implemented. Do not substitute one credential type
-for the other.
+Developer workspace access is a different principal and credential model. A
+person acting for the responsible business creates one workspace and obtains
+organization-level HMAC credentials through the
+[Developer Access flow](https://docs.spritz.finance/guides/developer-access).
+Do not substitute one credential type for the other.
 
 ## Usage
 

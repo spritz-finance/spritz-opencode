@@ -7,7 +7,6 @@ import { createSpritzConfig } from "./cli/settings.js";
 import {
   addPluginToConfig,
   addMcpServerToConfig,
-  addInstructionsUrl,
   createNewConfig,
 } from "./cli/mcp.js";
 import {
@@ -72,7 +71,7 @@ async function install(): Promise<void> {
     console.log(`  Found config at ${configPath}`);
     const ok1 = addPluginToConfig(configPath);
     const ok2 = addMcpServerToConfig(configPath);
-    const ok3 = addInstructionsUrl(configPath);
+    const ok3 = removeInstructionsFromConfig();
     if (ok1 && ok2 && ok3) {
       console.log("  Updated OpenCode config");
     } else {
@@ -93,9 +92,9 @@ async function install(): Promise<void> {
 
   OpenCode will launch: spritz auth mcp --access user
 
-  Developer workspace-agent access is a separate HMAC/scoped credential model
-  and remains fail-closed. Do not substitute a Developer credential or raw key
-  for the End User account grant.
+  Developer workspace access uses a separate, human-owned organization and HMAC
+  credential flow. Do not substitute a Developer credential or raw key for the
+  End User account grant.
 
   Restart OpenCode after the human completes approval.
 `);
